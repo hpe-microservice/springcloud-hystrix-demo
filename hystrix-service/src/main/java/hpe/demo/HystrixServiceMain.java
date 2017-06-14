@@ -22,6 +22,12 @@ class RibbonController {
 
 	@GetMapping("/find-user/{id}")
 	public User findUserById(@PathVariable Long id) {
+		try {
+			Thread.sleep(700);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		System.out.println("/find-user/" + id);
 		return new User(id, "HPE");
 	}

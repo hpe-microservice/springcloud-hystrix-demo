@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixProperty;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 
 @SpringBootApplication
@@ -34,14 +34,22 @@ class HystrixClientController {
 	@Autowired
 	private RestTemplate restTemplate;
 
-	@GetMapping("/ribbon/{id}")
-	@HystrixCommand(fallbackMethod = "fallback")
-	public User ribbon(@PathVariable Long id) {
+	@GetMapping("/timeout/{id}")
+	@HystrixCommand(fallbackMethod = "fallback", commandProperties = {
+			@HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "500") })
+	public User timeout(@PathVariable Long id) {
 		return this.restTemplate.getForObject("http://hystrix-finduser-service/" + "find-user/" + id, User.class);
 	}
 
+	@GetMapping("/normal/{id}")
+	@HystrixCommand(fallbackMethod = "fallback")
+	public User normal(@PathVariable Long id) {
+		return this.restTemplate.getForObject("http://hystrix-finduser-service/" + "find-user/" + id, User.class);
+	}
+
+
 	public User fallback(Long id) {
-		System.out.println("enter fallback()..");
+		System.out.println("enter fallback(), /ribbon/" + id);
 		return new User(-1L, "error");
 	}
 }
